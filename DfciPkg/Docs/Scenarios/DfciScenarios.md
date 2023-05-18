@@ -15,8 +15,11 @@ misconfiguration or disk corruption.
 ## Microsoft DFCI Scenario Requirements
 
 * PCs must include the DFCI feature in their UEFI
-* PCs must be registered to the [Windows Autopilot](https://www.microsoft.com/en-us/microsoft-365/windows/windows-autopilot)
-service by an OEM or [Microsoft Cloud Solution Provider](https://docs.microsoft.com/en-us/windows/client-management/mdm/uefi-csp)
+* PCs must be registered to either a:
+
+  * [Windows Autopilot](https://www.microsoft.com/en-us/microsoft-365/windows/windows-autopilot) service by an OEM
+  * [Microsoft Cloud Solution Provider](https://docs.microsoft.com/en-us/windows/client-management/mdm/uefi-csp)
+
 * PCs must be managed with [Microsoft Intune](https://www.microsoft.com/en-us/microsoft-365/enterprise-mobility-security/microsoft-intune)
 
 ### OEMs that support DFCI

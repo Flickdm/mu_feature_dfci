@@ -10,14 +10,16 @@ exercise the DFCI test cases.
 
 You will need the following:
 
-1. Knowledge that the sub directory DfciDutFiles is used for both the build and run scripts for
-Q35, the emulated USB drives used to install windows, and setup the DFCI Test solution into the QemuQ35Pkg VM.
+1. Knowledge that the sub directory DfciDutFiles:
+    1. Contains both the build and run scripts for Q35
+    2. Contains the emulated USB drives used to install windows
+    3. Setting up the DFCI Test solution for the QemuQ35Pkg VM
 2. An install image for Windows 11 (available when you purchase a license for Windows 11).
-    - Using the [Windows Media Creation Tool](https://support.microsoft.com/en-us/windows/create-installation-media-for-windows-99a58364-8c02-206f-aa6f-40c3b507420d),
-create a USB storage device from your install media.
-3. An upper end X64 desktop system that can dedicate three processor cores to the QemuQ35Pkg virtual device.
+    1. Using the [Windows Media Creation Tool](https://support.microsoft.com/en-us/windows/create-installation-media-for-windows-99a58364-8c02-206f-aa6f-40c3b507420d),
+    create a USB storage device from your install media.
+3. An upper end X64 desktop system that can dedicate a minimum of three processor cores to the QemuQ35Pkg virtual device.
 4. The HOST needs to be setup to run the DFCI test cases.
-See [Setting up the Host](https://github.com/microsoft/mu_feature_dfci/blob/main/DfciPkg/UnitTests/DfciTests/readme.md#setting-up-the-host-system-with-the-refresh-from-network-server-running-in-a-container).
+    1. See [Setting up the Host](https://github.com/microsoft/mu_feature_dfci/blob/main/DfciPkg/UnitTests/DfciTests/readme.md#setting-up-the-host-system-with-the-refresh-from-network-server-running-in-a-container).
 
 ## Setting up QemuQ35Pkg to be the Device Under Test
 

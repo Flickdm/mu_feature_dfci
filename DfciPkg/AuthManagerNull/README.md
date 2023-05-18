@@ -4,7 +4,7 @@
 
 Do not use in production!
 
-### FrontPage during device bringup
+### FrontPage during device bring up
 
 This driver can be a stand in for IdentityAndAuthManager, which requires RngLib, to allow FrontPage development if
 RngLib is not yet functional.
