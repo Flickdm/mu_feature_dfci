@@ -21,12 +21,13 @@ DfciDeviceIdSupportLib provides DFCI with three platform strings:
 | DfciIdSupportV1GetSerialNumber | DEPRECATED.  Always return 0. Will be removed. |
 | DfciIdSupportGetManufacturer   | Returns an allocated buffer with the system manufacturer name. |
 | DfciIdSupportGetProductName    | Returns an allocated buffer with the system product name. |
-| DfciIdSupportGetSerialNumber   | Returns an allocated buffer with the system serial number. |
+| DfciIdSupportGetSerialNumber   | Returns an allocated buffer with the system type 01 serial number. |
 
 ## Additional Details
 
 These fields and their values are critical to the security of DFCI.
 These values should not be user configurable and should be protected from tampering.
+Intune targeting of devices depends on SMBIOS system information type 01 serial number.
 
 ## Testing Requirements
 
