@@ -8,6 +8,7 @@
 
 import argparse
 import glob
+import ipaddress
 import logging
 import os
 import subprocess
@@ -71,7 +72,12 @@ def generate_httpreq_cnf(config):
             config_file.write(line + os.linesep)
 
         config_file.write('DNS.1 = localhost' + os.linesep)
-        config_file.write(f'DNS.2 = {hostname}' + os.linesep)
+        try:
+            ipaddress.ip_address(hostname)
+        except ValueError:
+            config_file.write(f'DNS.2 = {hostname}' + os.linesep)
+        else:
+            config_file.write(f'IP.1 = {hostname}' + os.linesep)
         config_file.close()
 
 

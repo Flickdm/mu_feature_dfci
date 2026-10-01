@@ -7,9 +7,13 @@ from flask import Flask, request, send_file, jsonify
 
 dfci_refresh_server = Flask(__name__)
 
-dfci_refresh_server.config['REQUEST_FOLDER'] = '/srv/dfci_refresh_server/src/Requests'
-dfci_refresh_server.config['RESPONSE_FOLDER'] = '/srv/dfci_refresh_server/src/Responses'
-DfciTest_Config = '/srv/dfci_refresh_server/src/DfciTests.ini'
+server_data_dir = os.environ.get('DFCI_REFRESH_DATA_DIR', '/srv/dfci_refresh_server/src')
+dfci_refresh_server.config['REQUEST_FOLDER'] = os.path.join(server_data_dir, 'Requests')
+dfci_refresh_server.config['RESPONSE_FOLDER'] = os.path.join(server_data_dir, 'Responses')
+DfciTest_Config = os.environ.get(
+    'DFCI_TEST_CONFIG',
+    os.path.join(server_data_dir, 'DfciTests.ini'),
+)
 
 
 def compare_json_files(request_name, expected_name):
@@ -34,6 +38,20 @@ def get_host_name():
     config.read(DfciTest_Config)
 
     return config["DfciTest"]["server_host_name"]
+
+
+def get_server_origin(scheme):
+    if scheme == 'http':
+        port = int(os.environ.get('DFCI_HTTP_PORT', '80'))
+        default_port = 80
+    elif scheme == 'https':
+        port = int(os.environ.get('DFCI_HTTPS_PORT', '443'))
+        default_port = 443
+    else:
+        raise ValueError(f'Unsupported URL scheme {scheme}')
+
+    port_suffix = '' if port == default_port else f':{port}'
+    return f'{scheme}://{get_host_name()}{port_suffix}'
 
 
 #
@@ -134,7 +152,7 @@ def recovery_bootstrap_request():
             response.status_code = 202
             #
 
-            location = 'http://' + get_host_name() + '/ztd/unauthenticated/dfci/recovery-bootstrap-status/request-id'
+            location = get_server_origin('http') + '/ztd/unauthenticated/dfci/recovery-bootstrap-status/request-id'
             response.headers['Location'] = location
             return response
         else:
@@ -218,7 +236,7 @@ def recovery_packets():
             #
             # return a full URL with https instead of http
             response.autocorrect_location_header = False
-            location = 'https://' + get_host_name() + '/ztd/unauthenticated/dfci/recovery-packets-status/request-id'
+            location = get_server_origin('https') + '/ztd/unauthenticated/dfci/recovery-packets-status/request-id'
             response.headers['Location'] = location
             return response
         else:

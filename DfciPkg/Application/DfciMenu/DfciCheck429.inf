@@ -39,6 +39,7 @@
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   NetworkPkg/NetworkPkg.dec
+  ShellPkg/ShellPkg.dec
 
 [LibraryClasses]
   BaseLib
@@ -51,9 +52,11 @@
   MemoryAllocationLib
   JsonLiteParserLib
   PrintLib
+  ShellLib
   UefiBootServicesTableLib
   UefiApplicationEntryPoint
   UefiLib
+  UefiRuntimeServicesTableLib
 
 [Guids]
   gDfciAuthProvisionVarNamespace

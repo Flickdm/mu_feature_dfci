@@ -1,6 +1,8 @@
 # Web Server for testing the Refresh from Network function in DFCI.
 
 
+import os
+
 import cherrypy
 from main import dfci_refresh_server
 
@@ -24,15 +26,16 @@ if __name__ == '__main__':
 
     # Configure the server object
     server_http.socket_host = "0.0.0.0"
-    server_http.socket_port = 80
+    server_http.socket_port = int(os.environ.get('DFCI_HTTP_PORT', '80'))
     server_http.thread_pool = 30
 
     server_https = cherrypy._cpserver.Server()
     server_https.ssl_module = 'PyOpenSSL'
 
+    ssl_dir = os.environ.get('DFCI_SSL_DIR', 'ssl')
     ctx = SSL.Context(SSL.TLS_SERVER_METHOD)
-    ctx.use_privatekey_file('ssl/DFCI_HTTPS.key')
-    ctx.use_certificate_file('ssl/DFCI_HTTPS.pem')
+    ctx.use_privatekey_file(os.path.join(ssl_dir, 'DFCI_HTTPS.key'))
+    ctx.use_certificate_file(os.path.join(ssl_dir, 'DFCI_HTTPS.pem'))
 
     # Set the Maximum Protocol Version supported by Intune
     ctx.set_max_proto_version(SSL.TLS1_2_VERSION)
@@ -56,7 +59,7 @@ if __name__ == '__main__':
     
     server_https.ssl_context = ctx
     server_https.socket_host = "0.0.0.0"
-    server_https.socket_port = 443
+    server_https.socket_port = int(os.environ.get('DFCI_HTTPS_PORT', '443'))
     server_https.thread_pool = 30
 
     # Subscribe this server

@@ -45,6 +45,28 @@ ProcessSimpleNetworkRequest (
   );
 
 /**
+ * Install the DFCI HTTPS certificate as the active TLS CA certificate.
+ *
+ * @param NetworkRequest     - Private data containing the HTTPS certificate
+ *
+ * @return EFI_STATUS
+ */
+EFI_STATUS
+EnableDfciCertificate (
+  IN DFCI_NETWORK_REQUEST  *NetworkRequest
+  );
+
+/**
+ * Restore the TLS CA certificate that was active before EnableDfciCertificate.
+ *
+ * @return EFI_STATUS
+ */
+EFI_STATUS
+RestoreDfciCertificates (
+  VOID
+  );
+
+/**
  * TryEachNICThenProcessRequest
  *
  * @param[in]   NetworkRequest

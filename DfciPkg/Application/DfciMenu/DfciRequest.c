@@ -59,6 +59,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 STATIC VOID    *mOldCertificateList = NULL;
 STATIC UINTN   mOldCertificateSize;
 STATIC UINT32  mOldCertificateAttr;
+STATIC BOOLEAN  mCertificateReplacementActive;
 
 /**
  * Dump the HTTP Headers
@@ -1887,34 +1888,49 @@ CLEANUP:
  *
  *
 **/
-STATIC
 EFI_STATUS
-RestoreCertificates (
+RestoreDfciCertificates (
   VOID
   )
 {
   EFI_STATUS  Status;
 
-  if (NULL == mOldCertificateList) {
+  if (!mCertificateReplacementActive) {
     return EFI_SUCCESS;
   }
 
-  Status = gRT->SetVariable (
-                  EFI_TLS_CA_CERTIFICATE_VARIABLE,
-                  &gEfiTlsCaCertificateGuid,
-                  mOldCertificateAttr,
-                  mOldCertificateSize,
-                  mOldCertificateList
-                  );
-  if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "Unable to restore Tls Certificates\n"));
+  if (mOldCertificateList == NULL) {
+    Status = gRT->SetVariable (
+                    EFI_TLS_CA_CERTIFICATE_VARIABLE,
+                    &gEfiTlsCaCertificateGuid,
+                    0,
+                    0,
+                    NULL
+                    );
+  } else {
+    Status = gRT->SetVariable (
+                    EFI_TLS_CA_CERTIFICATE_VARIABLE,
+                    &gEfiTlsCaCertificateGuid,
+                    mOldCertificateAttr,
+                    mOldCertificateSize,
+                    mOldCertificateList
+                    );
   }
 
-  FreePool (mOldCertificateList);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "Unable to restore Tls Certificates. Code=%r\n", Status));
+  }
 
-  mOldCertificateList = NULL;
+  if (mOldCertificateList != NULL) {
+    FreePool (mOldCertificateList);
+  }
 
-  return EFI_SUCCESS;
+  mOldCertificateList            = NULL;
+  mOldCertificateSize            = 0;
+  mOldCertificateAttr            = 0;
+  mCertificateReplacementActive = FALSE;
+
+  return Status;
 }
 
 /**
@@ -1929,7 +1945,6 @@ RestoreCertificates (
  * 4. Restore the EFI_TLS_CA_CERTIFICATE_VARIABLE
  *
 **/
-STATIC
 EFI_STATUS
 EnableDfciCertificate (
   IN    DFCI_NETWORK_REQUEST  *NetworkRequest
@@ -1939,6 +1954,14 @@ EnableDfciCertificate (
   EFI_SIGNATURE_DATA  *CertData;
   UINTN               CertSize;
   EFI_STATUS          Status;
+
+  if (mCertificateReplacementActive) {
+    return EFI_ALREADY_STARTED;
+  }
+
+  mOldCertificateList = NULL;
+  mOldCertificateSize = 0;
+  mOldCertificateAttr = 0;
 
   //
   // Try to read the TlsCaCertificate variable.
@@ -1968,13 +1991,12 @@ EnableDfciCertificate (
                     mOldCertificateList
                     );
     if (EFI_ERROR (Status)) {
-      //
-      // Couldn't save the existing variable.
-      //
       FreePool (mOldCertificateList);
       mOldCertificateList = NULL;
+      mOldCertificateSize = 0;
+      mOldCertificateAttr = 0;
       DEBUG ((DEBUG_ERROR, "Error reading old certificate list. Code=%r\n", Status));
-      // Go ahead and try to use our certificate anyway
+      return Status;
     }
 
     // Delete current variable first in case the attributes change.
@@ -1987,15 +2009,24 @@ EnableDfciCertificate (
                     );
     if (EFI_ERROR (Status)) {
       DEBUG ((DEBUG_ERROR, "Unable to erase old cert data. Code=%r\n", Status));
-      // Go ahead and try to use our certificate anyway
+      FreePool (mOldCertificateList);
+      mOldCertificateList = NULL;
+      mOldCertificateSize = 0;
+      mOldCertificateAttr = 0;
+      return Status;
     }
+  } else if (Status != EFI_NOT_FOUND) {
+    return Status;
   }
+
+  mCertificateReplacementActive = TRUE;
 
   CertSize = sizeof (EFI_SIGNATURE_LIST) + sizeof (EFI_SIGNATURE_DATA) - 1 + NetworkRequest->HttpsCertSize;
 
   Cert = (EFI_SIGNATURE_LIST *)AllocateZeroPool (CertSize);
   if (Cert == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
+    RestoreDfciCertificates ();
     return Status;
   }
 
@@ -2017,7 +2048,7 @@ EnableDfciCertificate (
                   );
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "Unable to set Dfci Https certificate. Code=%r\n", Status));
-    RestoreCertificates ();
+    RestoreDfciCertificates ();
   }
 
   FreePool (Cert);
@@ -2155,7 +2186,7 @@ operation."
   }
 
 EXIT_NETWORK_REQUEST:
-  RestoreCertificates ();
+  RestoreDfciCertificates ();
   CleanupNetworkRequest (NetworkRequest, CLEANUP_ALL);
   return Status;
 }

@@ -7,6 +7,7 @@ tags/
 .vscode/
 *.bak
 BuildConfig.conf
+/DfciPkg/UnitTests/DfciTests/Artifacts/
 
 # Repo-specific
 _TEMP_*/
